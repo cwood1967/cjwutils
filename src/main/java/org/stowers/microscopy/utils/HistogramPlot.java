@@ -31,6 +31,10 @@ public class HistogramPlot {
 
     boolean logY;
 
+    String title = "Title";
+    String xlabel = "X";
+    String ylabel = "Y";
+
     public HistogramPlot(Histogram h) {
         this.h = h;
     }
@@ -43,12 +47,24 @@ public class HistogramPlot {
         frame = new JFrame("Histogram");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-        makeChart("Title", "Data", "Frequency");
+        makeChart(title, xlabel, ylabel);
 
         frame.add(chartpanel);
         frame.setSize(800, 600);
         frame.pack();
         frame.setVisible(true);
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setXLabel(String xlabel) {
+        this.xlabel = xlabel;
+    }
+
+    public void setYLabel(String ylabel) {
+        this.ylabel = ylabel;
     }
 
     public ChartPanel makeChart(String title, String xlabel, String ylabel) {
