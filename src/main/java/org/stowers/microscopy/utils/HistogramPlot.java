@@ -20,6 +20,7 @@ import org.jfree.data.xy.DefaultXYDataset;
 import org.jfree.data.xy.XYBarDataset;
 
 import java.awt.*;
+import java.util.Arrays;
 
 public class HistogramPlot {
 
@@ -39,9 +40,9 @@ public class HistogramPlot {
         this.h = h;
     }
 
-    public HistogramPlot(double[] d, int nbins) {
-        Histogram  h = new Histogram(d, nbins);
-    }
+//    public HistogramPlot(double[] d, int nbins) {
+//        Histogram  h = new Histogram(d, nbins);
+//    }
 
     public void plotHist() {
         frame = new JFrame("Histogram");
@@ -116,7 +117,8 @@ public class HistogramPlot {
             x[i] = -Math.log(rnd.nextDouble());
         }
 
-        Histogram h = new Histogram(x, 10);
+
+        Histogram h = new Histogram(Arrays.asList(x), 10);
         HistogramPlot p = new HistogramPlot(h);
 //        p.setLogY(true);
 //        p.plotHist();

@@ -1,16 +1,24 @@
 package org.stowers.microscopy.utils;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
+
+import net.imglib2.Cursor;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.real.DoubleType;
 
 /**
  * Created by cjw on 7/27/16.
  */
-public class Histogram {
+public class Histogram  < T extends RealType< T> & NativeType< T >> {
 
     double[] counts;
     double[] bins;
     double[] data;
+
+    Iterable< T > idata;
 
     int nbins;
     double dataMin;
@@ -20,8 +28,21 @@ public class Histogram {
     double hmax;
 
     public Histogram(double[] data, int xnbins) {
-        this.data = data;
+
+        this.idata = arrayToList(data);
         this.nbins = xnbins;
+        this.run();
+
+    }
+
+    public Histogram(Iterable< T > idata, int xnbins) {
+
+        this.idata = idata;
+        this.nbins = xnbins;
+        this.run();
+    }
+
+    protected void run() {
         findDataMinMax();
         makeBins();
         counts = new double[nbins];
@@ -29,11 +50,19 @@ public class Histogram {
         doHist();
     }
 
+    protected ArrayList<T> arrayToList(double[] data) {
+        ArrayList< T > list = new ArrayList<>();
+        for (int i =0; i < data.length; i++) {
+            list.add((T)(new DoubleType(data[i])));
+        }
+
+        return list;
+    }
     public double[] doHist() {
 
-        for (int i = 0; i < data.length; i++) {
+        for (final T type : idata) {
 
-            double x = data[i];
+            double x = type.getRealDouble();
             int k = (int)(nbins*(x - startx)/(endx - startx));
             try {
                 counts[k]++;
@@ -41,8 +70,19 @@ public class Histogram {
             catch (Exception e) {
                 System.out.println(x + " " + k + " " + startx + " " + endx);
             }
-//            System.out.println(x + " " + k);
         }
+//        for (int i = 0; i < data.length; i++) {
+//
+//            double x = data[i].getRealDouble();
+//            int k = (int)(nbins*(x - startx)/(endx - startx));
+//            try {
+//                counts[k]++;
+//            }
+//            catch (Exception e) {
+//                System.out.println(x + " " + k + " " + startx + " " + endx);
+//            }
+////            System.out.println(x + " " + k);
+//        }
 
         for (int i = 0; i < counts.length; i++) {
             if (counts[i] > hmax) {
@@ -111,21 +151,31 @@ public class Histogram {
 
     protected void findDataMinMax() {
 
-        double min = Double.MAX_VALUE;
-        double max = -Double.MAX_VALUE;
-        for (int i = 0; i < data.length; i++) {
+        Double min = Double.MAX_VALUE;
+        Double max = -Double.MAX_VALUE;
 
-            double x = data[i];
-            if (x > max) {
-                max = x;
+        final Iterator< T > iterator = idata.iterator();
+
+        T type = iterator.next();
+        T tmin = type.createVariable();
+        T tmax = tmin.copy();
+
+        tmin.set(type);
+        tmax.set(type);
+
+        while (iterator.hasNext()) {
+            type = iterator.next();
+
+            if (type.compareTo(tmin) < 0) {
+                tmin.set(type);
             }
-            if ( x < min) {
-                min = x;
+            if (type.compareTo(tmax) > 0) {
+                tmax.set(type);
             }
         }
 
-        dataMin = min;
-        dataMax = max;
+        dataMin = tmin.getRealDouble();
+        dataMax = tmax.getRealDouble();
         startx = dataMin - .01*(dataMax - dataMin);
         endx = dataMax + .01*(dataMax - dataMin);;
     }
